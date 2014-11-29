@@ -79,7 +79,7 @@ void main (void)
 		vec3 reflected_ray = normalize( reflect(-effetLight,normal));
 
 		//ambiant
-		gl_FragColor = Color * 0.1;
+		gl_FragColor = Color * 0.2;
 
 		// diffusion
 		gl_FragColor += Color * kd * I;

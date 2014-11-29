@@ -153,6 +153,10 @@ public:
 
 	void displayObject(GLuint shaderprogram, glm::mat4 viewmatrix)
 	{
+		glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "mymodel_matrix"), 1, GL_FALSE, &model_matrix[0][0]);
+		glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(viewmatrix*model_matrix)));
+		glUniformMatrix3fv(glGetUniformLocation(shaderprogram, "mynormal_matrix"), 1, GL_FALSE, &normal_matrix[0][0]);
+
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -177,11 +181,6 @@ public:
 		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
 		
-		glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "mymodel_matrix"), 1,
-		GL_FALSE, &model_matrix[0][0]);
-		glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(viewmatrix*model_matrix)));
-		glUniformMatrix3fv(glGetUniformLocation(shaderprogram, "mynormal_matrix"), 1,
-		GL_FALSE, &normal_matrix[0][0]);
 		
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0) ; 
 	}
@@ -235,20 +234,20 @@ public:
 
 	void translate(double x, double y, double z)
 	{
-	glm::mat4 tmp = glm::translate(glm::vec3(x,y,z));
-	model_matrix = tmp * model_matrix;
+		glm::mat4 tmp = glm::translate(glm::vec3(x,y,z));
+		model_matrix = tmp * model_matrix;
 	}
 
 	void rotate(double axis_x, double axis_y, double axis_z, double angle)
 	{
-	glm::mat4 tmp = glm::rotate((float) angle, glm::vec3(axis_x, axis_y, axis_z));
-	model_matrix = tmp * model_matrix;
+		glm::mat4 tmp = glm::rotate((float) angle, glm::vec3(axis_x, axis_y, axis_z));
+		model_matrix = tmp * model_matrix;
 	}
 
 	void scale(double x, double y, double z)
 	{
-	glm::mat4 tmp = glm::scale(glm::vec3(x, y, z));
-	model_matrix = tmp * model_matrix;
+		glm::mat4 tmp = glm::scale(glm::vec3(x, y, z));
+		model_matrix = tmp * model_matrix;
 	
 	}
 
@@ -277,7 +276,7 @@ public:
 		z = f * ( dv2 * e1z - dv1 * e2z );
 	}
 
-	void computeTangents( )
+	void computeTangents()
 	{
 		int i, j, k;
 		GLfloat x1, y1, z1;
