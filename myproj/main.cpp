@@ -8,6 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 #include <vector>
+#include <list>
 using namespace std;
 
 #include "shaders.h"
@@ -20,9 +21,9 @@ using namespace std;
 int Glut_w = 600, Glut_h = 400; 
 
 //Variables and their values for the camera setup.
-myPoint3D camera_eye(0,0,4);
+myPoint3D camera_eye(0,2,4);
 myVector3D camera_up(0,1,0);
-myVector3D camera_forward (0,0,-1);
+myVector3D camera_forward (0,0,-0.5);
 
 float fovy = 90;
 float zNear = 0.2;
@@ -50,7 +51,11 @@ vector<GLfloat> normals;
 vector<GLuint> indices;
 
 
-myObject3D *obj1,*obj2;
+myObject3D *obj1,*obj2, *obj3, *door;
+
+//these variables control the roration and movement of the camera. When non-zero camera is moving, when zero camera is still
+int deltaAngle = 0;
+int deltaMove = 0;
 
 //This function is called when a mouse button is pressed.
 void mouse(int button, int state, int x, int y)
@@ -122,9 +127,9 @@ void keyboard(unsigned char key, int x, int y) {
 		glUniform1i(renderStyle_loc, renderStyle) ; 
 		break;
 	case 'r':
-		camera_eye = myPoint3D(0,0,2);
+		camera_eye = myPoint3D(0,2,4);
 		camera_up = myVector3D(0,1,0);
-		camera_forward = myVector3D(0,0,-1);
+		camera_forward = myVector3D(0,0,-0.5);
 		break;
 	case 'p':
 		mylightType = (mylightType+1)%3;
@@ -137,10 +142,10 @@ void keyboard(unsigned char key, int x, int y) {
 void keyboard2(int key, int x, int y) {
 	switch(key) {
 	case GLUT_KEY_UP:
-		camera_eye += camera_forward*1.1;
+		camera_eye += camera_forward;
 		break;
 	case GLUT_KEY_DOWN:
-		camera_eye += -camera_forward*1.1;
+		camera_eye += -camera_forward;
 		break;
 	case GLUT_KEY_LEFT:
 		camera_up.normalize();
@@ -156,6 +161,38 @@ void keyboard2(int key, int x, int y) {
 	glutPostRedisplay();
 }
 
+void pressKey(int key, int x, int y) {
+	switch (key) {
+		case GLUT_KEY_UP: deltaMove = 1; break;
+		case GLUT_KEY_DOWN: deltaMove = -1; break;
+		case GLUT_KEY_LEFT: deltaAngle = 1; break;
+		case GLUT_KEY_RIGHT: deltaAngle = -1; break;
+	}
+	glutPostRedisplay();
+}
+
+void releaseKey(int key, int x, int y) {
+	switch (key) {
+		case GLUT_KEY_UP: deltaMove = 0; break;
+		case GLUT_KEY_DOWN: deltaMove = 0; break;
+		case GLUT_KEY_LEFT: deltaAngle = 0; break;
+		case GLUT_KEY_RIGHT: deltaAngle = 0; break;
+	}
+	glutPostRedisplay();
+}
+
+void computePos(int deltaMove) {
+	camera_eye += camera_forward * 0.012 * deltaMove;
+	glutPostRedisplay();
+}
+
+void computeDir(int deltaAngle) {
+	camera_up.normalize();
+	camera_forward.rotate(camera_up, 0.008 * deltaAngle);
+	camera_forward.normalize();
+	glutPostRedisplay();
+}
+
 void reshape(int width, int height){
 	Glut_w = width;
 	Glut_h = height;
@@ -167,6 +204,15 @@ void reshape(int width, int height){
 //This function is called to display objects on screen.
 void display() 
 {
+	if (deltaMove)
+	{
+		computePos(deltaMove);
+	}	
+	if (deltaAngle)
+	{
+		computeDir(deltaAngle);
+	}
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glViewport(0, 0, Glut_w, Glut_h);
@@ -198,7 +244,9 @@ void display()
 	
 	//obj1->displayNormal();
 	obj1->displayObject(shaderprogram1,view_matrix);
-	//obj2->displayObject(shaderprogram1,view_matrix);
+	obj2->displayObject(shaderprogram1, view_matrix);
+	obj3->displayObject(shaderprogram1, view_matrix);
+	door->displayObject(shaderprogram1, view_matrix);
 
 	glPointSize(6.0);
 	glBegin(GL_POINTS);
@@ -243,45 +291,46 @@ void init()
 
 	obj1 = new myObject3D();
 	obj1->readMesh("sphere.obj");
+	obj1->translate(0, 3.9, 0);
+	obj1->scale(0.5, 0.5, 0.5);
 	obj1->computeNormals();
 	obj1->computeSphereTexture();
 	obj1->computeTangents();
 	obj1->createObjectBuffers();
 	obj1->texture.readTexture("shingles-diffuse.ppm");
 	obj1->bump.readTexture("shingles-normal.ppm");
-	//obj1->translate(1,1,1);
 	
 	
-
-	/*obj2 = new myObject3D();
-	obj2->readMesh("sphere.obj");
+	obj2 = new myObject3D();
+	obj2->readMesh("table.obj");
+	obj2->translate(0, 0, 0);
 	obj2->computeNormals();
 	obj2->computeSphereTexture();
 	obj2->computeTangents();
 	obj2->createObjectBuffers();
-	obj2->texture.readTexture("earthmap.ppm",&obj1->texture.texName);
-	obj1->texture.readTexture("earthmap.ppm",&obj1->texture.bumpName);*/
-	//obj2->scale(1,1,0.5);
+	obj2->texture.readTexture("objects/wood.ppm");
+
+	obj3 = new myObject3D();
+	obj3->readMesh("plane.obj");
+	obj3->translate(0, 0, 0);
+	obj3->scale(10, 10, 10);
+	obj3->computeNormals();
+	obj3->computeCylinderTexture();
+	obj3->computeTangents();
+	obj3->createObjectBuffers();
+	obj3->texture.readTexture("shingles-diffuse.ppm");
+
+	door = new myObject3D();
+	door->readMesh("objects/door.obj");
+	door->translate(0, 0, -5);
+	door->computeNormals();
+	door->computeSphereTexture();
+	door->computeTangents();
+	door->createObjectBuffers();
+	door->texture.readTexture("objects/wood.ppm");
 
 	glUniform1i(glGetUniformLocation(shaderprogram1, "tex"), 1);
 	glUniform1i(glGetUniformLocation(shaderprogram1, "bump"), 2);
-
-
-	/*{
-	GLfloat verts[] = {1,1,1, 1,1,-1, 1,-1,1, 1,-1,-1, -1,1,1, -1,1,-1, -1,-1,1, -1,-1,-1};
-	GLuint inds[] = {0,1,3, 0,3,2, 4,5,7, 4,7,6, 0,2,6, 0,6,4, 1,3,7, 1,7,5, 0,1,5, 0,5,4, 2,3,7, 2,7,6};
-	vertices = vector<GLfloat> (verts, verts+24);
-	indices = vector<GLuint> (inds, inds+36);
-
-	glGenBuffers(2, buffers);
-
-	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size()*4, &vertices.front(), GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*4, &indices.front(), GL_STATIC_DRAW);
-	}*/
-
 
 	glClearColor(0.4, 0.4, 0.4, 0);
 }
@@ -298,10 +347,13 @@ int main(int argc, char* argv[]) {
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
-	glutSpecialFunc(keyboard2);
-	glutMotionFunc(mousedrag) ;
+	//glutSpecialFunc(keyboard2);
+	//glutMotionFunc(mousedrag) ;
 	glutMouseFunc(mouse) ;
-	glutMouseWheelFunc(mouseWheel);
+	//glutMouseWheelFunc(mouseWheel);
+	glutSpecialFunc(pressKey);
+	glutIgnoreKeyRepeat(1);
+	glutSpecialUpFunc(releaseKey);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS) ;

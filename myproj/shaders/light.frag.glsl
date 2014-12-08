@@ -22,6 +22,7 @@ in vec3 tangent_to_fragment;
 void main (void)
 {   
 	vec4 position_ = myview_matrix * mymodel_matrix * vectex_to_fragment;
+	//vec4 position_ = myprojection_matrix * myview_matrix * mymodel_matrix * vectex_to_fragment;
 	vec3 position = (position_.xyz / position_.w);
 
 
@@ -45,7 +46,7 @@ void main (void)
 	//eye = out_m * eye;
 	//lightpos = out_m * lightpos;
 
-	if(dot(normal,eye-position) < 0.2)
+	if(dot(normal,eye-position) == 0)
 		gl_FragColor = vec4(0,0,0,0);
 	else
 	{
@@ -54,7 +55,7 @@ void main (void)
 		if (myrenderStyle == 1) Color = vec4(0,0.7,0,0);
 		if (myrenderStyle == 2)
 		{
-			normal = normalize(2.0 * texture2D(bump, texture_to_fragment.st).rgb - 1.f);
+			//normal = normalize(2.0 * texture2D(bump, texture_to_fragment.st).rgb - 1.f);
 			Color = texture2D(tex, texture_to_fragment.st);
 		}
 		vec3 effetLight;
@@ -85,7 +86,7 @@ void main (void)
 		gl_FragColor += Color * kd * I;
 
 		// speculaire
-		gl_FragColor += Color * mylightColor * pow( max(dot(reflected_ray,normalize(eye-position)),0),60);
+		//gl_FragColor += Color * mylightColor * pow( max(dot(reflected_ray,normalize(eye-position)),0),60);
 		
 	}
 
