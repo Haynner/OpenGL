@@ -50,8 +50,7 @@ vector<GLfloat> vertices;
 vector<GLfloat> normals;
 vector<GLuint> indices;
 
-
-myObject3D *obj1,*obj2, *obj3, *door;
+std::vector<myObject3D> objects;
 
 //these variables control the roration and movement of the camera. When non-zero camera is moving, when zero camera is still
 int deltaAngle = 0;
@@ -107,6 +106,41 @@ void mousedrag(int x, int y)
   glutPostRedisplay();
 }
 
+void mousedrag2(int x, int y)
+{
+	// Invert y coordinate
+	y = Glut_h - y;
+
+	//change in the mouse position since last time
+	int dx = x - GLUTmouse[0];
+	int dy = y - GLUTmouse[1];
+
+	GLUTmouse[0] = x;
+	GLUTmouse[1] = y;
+
+	if (dx == 0 && dy == 0) return;
+	if (button_pressed == 0) return;
+
+	double vx = (double)dx / (double)Glut_w;
+	double vy = (double)dy / (double)Glut_h;
+	double theta = 4.0 * (fabs(vx) + fabs(vy));
+
+	myVector3D camera_right = camera_forward.crossproduct(camera_up);
+	camera_right.normalize();
+
+	myVector3D tomovein_direction = -camera_right*vx + -camera_up*vy;
+
+	myVector3D rotation_axis = tomovein_direction.crossproduct(camera_forward);
+	rotation_axis.normalize();
+
+	camera_forward.rotate(rotation_axis, theta);
+
+	camera_up.normalize();
+	camera_forward.normalize();
+
+	glutPostRedisplay();
+}
+
 void mouseWheel(int button, int dir, int x, int y)
 {
 	if (dir > 0)
@@ -122,11 +156,12 @@ void keyboard(unsigned char key, int x, int y) {
 	case 27:  // Escape to quit
 		exit(0) ;
         break ;
-	case 's':
+	case 'w':
 		renderStyle = (renderStyle+1)%3;
 		glUniform1i(renderStyle_loc, renderStyle) ; 
 		break;
 	case 'r':
+		cout << "bite" << endl;
 		camera_eye = myPoint3D(0,2,4);
 		camera_up = myVector3D(0,1,0);
 		camera_forward = myVector3D(0,0,-0.5);
@@ -161,29 +196,65 @@ void keyboard2(int key, int x, int y) {
 	glutPostRedisplay();
 }
 
-void pressKey(int key, int x, int y) {
+void pressKey(unsigned char key, int x, int y) {
 	switch (key) {
-		case GLUT_KEY_UP: deltaMove = 1; break;
-		case GLUT_KEY_DOWN: deltaMove = -1; break;
-		case GLUT_KEY_LEFT: deltaAngle = 1; break;
-		case GLUT_KEY_RIGHT: deltaAngle = -1; break;
+		case 'z': deltaMove = 1; break;
+		case 's': deltaMove = -1; break;
+		case 'q': deltaAngle = 1; break;
+		case 'd': deltaAngle = -1; break;
+		case 27:  // Escape to quit
+			exit(0);
+			break;
+		case 'w':
+			renderStyle = (renderStyle + 1) % 3;
+			glUniform1i(renderStyle_loc, renderStyle);
+			break;
+		case 'r':
+			camera_eye = myPoint3D(0, 2, 4);
+			camera_up = myVector3D(0, 1, 0);
+			camera_forward = myVector3D(0, 0, -0.5);
+			break;
+		case 'p':
+			mylightType = (mylightType + 1) % 3;
+			break;
 	}
 	glutPostRedisplay();
 }
 
-void releaseKey(int key, int x, int y) {
+void releaseKey(unsigned char  key, int x, int y) {
 	switch (key) {
-		case GLUT_KEY_UP: deltaMove = 0; break;
-		case GLUT_KEY_DOWN: deltaMove = 0; break;
-		case GLUT_KEY_LEFT: deltaAngle = 0; break;
-		case GLUT_KEY_RIGHT: deltaAngle = 0; break;
+		case 'z': deltaMove = 0; break;
+		case 's': deltaMove = 0; break;
+		case 'q': deltaAngle = 0; break;
+		case 'd': deltaAngle = 0; break;
 	}
 	glutPostRedisplay();
 }
 
 void computePos(int deltaMove) {
-	camera_eye += camera_forward * 0.012 * deltaMove;
-	glutPostRedisplay();
+	bool canPass = true;
+	for each (myObject3D obj in objects)
+	{
+		if (((camera_eye + camera_forward * 0.5 * deltaMove).X < obj.maxX && (camera_eye + camera_forward * 0.5 * deltaMove).X > obj.minX) && ((camera_eye + camera_forward * 0.5 * deltaMove).Z < obj.maxZ && (camera_eye + camera_forward * 0.5 * deltaMove).Z >  obj.minZ) && (camera_eye.Y - 1 < obj.maxY && camera_eye.Y - 1 >  obj.minY))
+		{
+			
+			double objCX = (obj.minX + obj.maxX) / 2; // X center of the box
+			double objCZ = (obj.minZ + obj.maxZ) / 2; // Z center of the box
+			double objCY = (obj.minY + obj.maxY) / 2; // Y center of the box
+			double dist = sqrt(pow(objCX - camera_eye.X, 2) + pow(objCZ - camera_eye.Z, 2) + pow(objCY - camera_eye.Y, 2)); // distance beetween cam and obj 
+			double newdist = sqrt(pow(objCX - (camera_eye + (camera_forward * 0.012 * deltaMove)).X, 2) + pow(objCZ - (camera_eye + (camera_forward * 0.012 * deltaMove)).Z, 2) + pow(objCY - (camera_eye + (camera_forward * 0.012 * deltaMove)).Y, 2));
+
+			if (newdist < dist || newdist != newdist)
+				canPass = false;
+		}
+	}
+	
+	if (canPass)
+	{
+		camera_eye.X = (camera_eye + camera_forward * 0.012 * deltaMove).X;
+		camera_eye.Z = (camera_eye + camera_forward * 0.012 * deltaMove).Z;
+		glutPostRedisplay();
+	}
 }
 
 void computeDir(int deltaAngle) {
@@ -243,10 +314,10 @@ void display()
 	glUniform1i(mylightType_loc, mylightType);
 	
 	//obj1->displayNormal();
-	obj1->displayObject(shaderprogram1,view_matrix);
-	obj2->displayObject(shaderprogram1, view_matrix);
-	obj3->displayObject(shaderprogram1, view_matrix);
-	door->displayObject(shaderprogram1, view_matrix);
+	for each(myObject3D obj in objects)
+	{
+		obj.displayObject(shaderprogram1, view_matrix);
+	}
 
 	glPointSize(6.0);
 	glBegin(GL_POINTS);
@@ -288,7 +359,7 @@ void init()
 	mylightDirection_loc = glGetUniformLocation(shaderprogram1, "mylightDirection");
 	mylightType_loc = glGetUniformLocation(shaderprogram1, "mylightType");
 	
-
+	myObject3D *obj1, *obj2, *obj3, *door;
 	obj1 = new myObject3D();
 	obj1->readMesh("sphere.obj");
 	obj1->translate(0, 3.9, 0);
@@ -299,7 +370,7 @@ void init()
 	obj1->createObjectBuffers();
 	obj1->texture.readTexture("shingles-diffuse.ppm");
 	obj1->bump.readTexture("shingles-normal.ppm");
-	
+	objects.push_back(*obj1);
 	
 	obj2 = new myObject3D();
 	obj2->readMesh("table.obj");
@@ -309,16 +380,18 @@ void init()
 	obj2->computeTangents();
 	obj2->createObjectBuffers();
 	obj2->texture.readTexture("objects/wood.ppm");
+	objects.push_back(*obj2);
 
 	obj3 = new myObject3D();
 	obj3->readMesh("plane.obj");
 	obj3->translate(0, 0, 0);
-	obj3->scale(10, 10, 10);
+	obj3->scale(7, 10, 10);
 	obj3->computeNormals();
 	obj3->computeCylinderTexture();
 	obj3->computeTangents();
 	obj3->createObjectBuffers();
 	obj3->texture.readTexture("shingles-diffuse.ppm");
+	objects.push_back(*obj3);
 
 	door = new myObject3D();
 	door->readMesh("objects/door.obj");
@@ -328,6 +401,55 @@ void init()
 	door->computeTangents();
 	door->createObjectBuffers();
 	door->texture.readTexture("objects/wood.ppm");
+	objects.push_back(*door);
+
+	myObject3D *wall1 = new myObject3D();
+	wall1->readMesh("plane.obj");
+	wall1->scale(3, 10, 10);
+	wall1->translate(3, 7, 0);
+	wall1->rotate(0,0,1,90);
+	wall1->computeNormals();
+	wall1->computeCylinderTexture();
+	wall1->computeTangents();
+	wall1->createObjectBuffers();
+	wall1->texture.readTexture("shingles-diffuse.ppm");
+	objects.push_back(*wall1);
+
+	wall1 = new myObject3D();
+	wall1->readMesh("plane.obj");
+	wall1->scale(3, 10, 10);
+	wall1->translate(3, -7, 0);
+	wall1->rotate(0, 0, 1, 90);
+	wall1->computeNormals();
+	wall1->computeCylinderTexture();
+	wall1->computeTangents();
+	wall1->createObjectBuffers();
+	wall1->texture.readTexture("shingles-diffuse.ppm");
+	objects.push_back(*wall1);
+
+	wall1 = new myObject3D();
+	wall1->readMesh("plane.obj");
+	wall1->scale(7, 3, 3);
+	wall1->translate(0, -10, -3);
+	wall1->rotate(1, 0, 0, 90);
+	wall1->computeNormals();
+	wall1->computeCylinderTexture();
+	wall1->computeTangents();
+	wall1->createObjectBuffers();
+	wall1->texture.readTexture("shingles-diffuse.ppm");
+	objects.push_back(*wall1);
+
+	wall1 = new myObject3D();
+	wall1->readMesh("plane.obj");
+	wall1->scale(7, 3, 3);
+	wall1->translate(0, 10, -3);
+	wall1->rotate(1, 0, 0, 90);
+	wall1->computeNormals();
+	wall1->computeCylinderTexture();
+	wall1->computeTangents();
+	wall1->createObjectBuffers();
+	wall1->texture.readTexture("shingles-diffuse.ppm");
+	objects.push_back(*wall1);
 
 	glUniform1i(glGetUniformLocation(shaderprogram1, "tex"), 1);
 	glUniform1i(glGetUniformLocation(shaderprogram1, "bump"), 2);
@@ -346,14 +468,15 @@ int main(int argc, char* argv[]) {
 	
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
-	glutKeyboardFunc(keyboard);
+	//glutKeyboardFunc(keyboard);
 	//glutSpecialFunc(keyboard2);
-	//glutMotionFunc(mousedrag) ;
-	glutMouseFunc(mouse) ;
+	//glutMotionFunc(mousedrag);
+	glutMotionFunc(mousedrag2);
+	glutMouseFunc(mouse);
 	//glutMouseWheelFunc(mouseWheel);
-	glutSpecialFunc(pressKey);
+	glutKeyboardFunc(pressKey);
 	glutIgnoreKeyRepeat(1);
-	glutSpecialUpFunc(releaseKey);
+	glutKeyboardUpFunc(releaseKey);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS) ;

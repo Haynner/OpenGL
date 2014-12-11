@@ -26,8 +26,16 @@ public:
 	myTexture texture;
 	myTexture bump;
 
+	float minX, maxX, minY, maxY, minZ, maxZ;
+
 	myObject3D() {
 		model_matrix = glm::mat4(1.0f);
+		minX = 0;
+		maxX = 0;
+		minY = 0;
+		maxY = 0;
+		minZ = 0;
+		maxZ = 0;
 	}
 
 	void clear() {
@@ -53,10 +61,37 @@ public:
 			{
 				myline >> vert;
 				vertices.push_back(vert);
+				// research of x min and x max to the edge collision algo
+				if (minX > vert)
+				{
+					minX = vert;
+				}
+				if (maxX < vert)
+				{
+					maxX = vert;
+				}
+
 				myline >> vert;
 				vertices.push_back(vert);
+				if (minY > vert)
+				{
+					minY = vert;
+				}
+				if (maxY < vert)
+				{
+					maxY = vert;
+				}
+
 				myline >> vert;
 				vertices.push_back(vert);
+				if (minZ > vert)
+				{
+					minZ = vert;
+				}
+				if (maxZ < vert)
+				{
+					maxZ = vert;
+				}
 			}
 			else if (t == "f")
 			{
@@ -236,6 +271,12 @@ public:
 	{
 		glm::mat4 tmp = glm::translate(glm::vec3(x,y,z));
 		model_matrix = tmp * model_matrix;
+		minX += x;
+		maxX += x;
+		minZ += z;
+		maxZ += z;
+		minY += y;
+		maxY += y;
 	}
 
 	void rotate(double axis_x, double axis_y, double axis_z, double angle)
@@ -248,7 +289,12 @@ public:
 	{
 		glm::mat4 tmp = glm::scale(glm::vec3(x, y, z));
 		model_matrix = tmp * model_matrix;
-	
+		minX *= x;
+		maxX *= x;
+		minZ *= z;
+		maxZ *= z;
+		minY *= y;
+		maxY *= y;
 	}
 
 		void computeTangent(int v0, int v1, int v2, float & x, float & y, float & z)
