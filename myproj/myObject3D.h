@@ -348,6 +348,5 @@ public:
 			tangents[3*i] /= l; tangents[3*i+1] /= l; tangents[3*i+2] /= l;
 		}
 	}
-
 	
 };

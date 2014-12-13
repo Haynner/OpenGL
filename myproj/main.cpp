@@ -221,9 +221,10 @@ void pressKey(unsigned char key, int x, int y) {
 			mylightType = (mylightType + 1) % 3;
 			break;
 		case 'e':
-			if (collision(*apple, myPoint3D(0, 0, 0) + camera_forward * 0.5))
+			if (collision(*apple, myPoint3D(0, 0, 0) + camera_forward * 0.5) && apple != NULL)
 			{
 				objects.erase(objects.begin());
+				apple = NULL;
 			}
 	}
 	glutPostRedisplay();
