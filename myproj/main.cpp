@@ -51,7 +51,7 @@ vector<GLfloat> vertices;
 vector<GLfloat> normals;
 vector<GLuint> indices;
 
-myObject3D me, *apple;
+myObject3D me, *apple, *door;
 std::vector<myObject3D> objects;
 
 //these variables control the roration and movement of the camera. When non-zero camera is moving, when zero camera is still
@@ -221,10 +221,12 @@ void pressKey(unsigned char key, int x, int y) {
 			mylightType = (mylightType + 1) % 3;
 			break;
 		case 'e':
-			if (collision(*apple, myPoint3D(0, 0, 0) + camera_forward * 0.5) && apple != NULL)
+			if (collision(*apple, myPoint3D(0, 0, 0) + camera_forward * 0.5) && apple != NULL && door != NULL)
 			{
 				objects.erase(objects.begin());
 				apple = NULL;
+				objects.erase(objects.begin());
+				door = NULL;
 			}
 	}
 	glutPostRedisplay();
@@ -385,7 +387,7 @@ void init()
 	
 	me = myObject3D();
 	me.readMesh("objects/me.obj");
-	me.scale(0.5, 0.7, 0.5);
+	me.scale(0.5, 0.5, 0.5);
 	me.translate(camera_eye.X, 0, camera_eye.Z);
 	me.computeNormals();
 	me.computeSphereTexture();
@@ -394,7 +396,7 @@ void init()
 	me.texture.readTexture("shingles-diffuse.ppm");
 	me.bump.readTexture("shingles-normal.ppm");
 
-	myObject3D *obj2, *obj3, *door;
+	myObject3D *obj2, *floor;
 	apple = new myObject3D();
 	apple->readMesh("apple.obj");
 	apple->translate(0, 4.1, 3);
@@ -405,6 +407,16 @@ void init()
 	apple->createObjectBuffers();
 	apple->texture.readTexture("objects/apple.ppm");
 	objects.push_back(*apple);
+
+	door = new myObject3D();
+	door->readMesh("objects/door.obj");
+	door->translate(-6, 0, -5);
+	door->computeNormals();
+	door->computeSphereTexture();
+	door->computeTangents();
+	door->createObjectBuffers();
+	door->texture.readTexture("objects/door.ppm");
+	objects.push_back(*door);
 	
 	obj2 = new myObject3D();
 	obj2->readMesh("table.obj");
@@ -416,73 +428,91 @@ void init()
 	obj2->texture.readTexture("objects/wood.ppm");
 	objects.push_back(*obj2);
 
-	obj3 = new myObject3D();
-	obj3->readMesh("plane.obj");
-	obj3->translate(0, 0, 0);
-	obj3->scale(7, 10, 10);
-	obj3->computeNormals();
-	obj3->computeCylinderTexture();
-	obj3->computeTangents();
-	obj3->createObjectBuffers();
-	obj3->texture.readTexture("shingles-diffuse.ppm");
-	objects.push_back(*obj3);
+	floor = new myObject3D();
+	floor->readMesh("plane.obj");
+	floor->translate(0, 0, 0);
+	floor->scale(7, 1, 10);
+	floor->computeNormals();
+	floor->computeCylinderTexture();
+	floor->computeTangents();
+	floor->createObjectBuffers();
+	floor->texture.readTexture("shingles-diffuse.ppm");
+	objects.push_back(*floor);
 
-	door = new myObject3D();
-	door->readMesh("objects/door.obj");
-	door->translate(0, 0, -5);
-	door->computeNormals();
-	door->computeSphereTexture();
-	door->computeTangents();
-	door->createObjectBuffers();
-	door->texture.readTexture("objects/wood.ppm");
-	objects.push_back(*door);
+	/*myObject3D *dooredge = new myObject3D();
+	dooredge->readMesh("objects/dooredge.obj");
+	dooredge->translate(-6, 0, -5);
+	dooredge->computeNormals();
+	dooredge->computeSphereTexture();
+	dooredge->computeTangents();
+	dooredge->createObjectBuffers();
+	dooredge->texture.readTexture("objects/dooredge.ppm");
+	objects.push_back(*dooredge);*/
 
-	myObject3D *wall1 = new myObject3D();
-	wall1->readMesh("plane.obj");
-	wall1->scale(3, 10, 10);
-	wall1->translate(3, 7, 0);
-	wall1->rotate(0,0,1,90);
+	myObject3D *wall1 = new myObject3D(); //right
+	wall1->readMesh("objects/wall.obj");
+	wall1->scale(1, 3, 10);
+	wall1->translate(7, 0, 0);
 	wall1->computeNormals();
 	wall1->computeCylinderTexture();
 	wall1->computeTangents();
 	wall1->createObjectBuffers();
-	wall1->texture.readTexture("shingles-diffuse.ppm");
+	wall1->texture.readTexture("objects/1.ppm");
 	objects.push_back(*wall1);
 
-	wall1 = new myObject3D();
-	wall1->readMesh("plane.obj");
-	wall1->scale(3, 10, 10);
-	wall1->translate(3, -7, 0);
-	wall1->rotate(0, 0, 1, 90);
+	wall1 = new myObject3D(); // left1
+	wall1->readMesh("objects/wall.obj");
+	wall1->scale(1, 3, 8);
+	wall1->translate(-7, 0, 5);
 	wall1->computeNormals();
 	wall1->computeCylinderTexture();
 	wall1->computeTangents();
 	wall1->createObjectBuffers();
-	wall1->texture.readTexture("shingles-diffuse.ppm");
+	wall1->texture.readTexture("objects/1.ppm");
 	objects.push_back(*wall1);
 
-	wall1 = new myObject3D();
-	wall1->readMesh("plane.obj");
-	wall1->scale(7, 3, 3);
-	wall1->translate(0, -10, -3);
-	wall1->rotate(1, 0, 0, 90);
+	wall1 = new myObject3D(); // left2
+	wall1->readMesh("objects/wall.obj");
+	wall1->scale(1, 0.5, 2);
+	wall1->translate(-7, 5, -5);
 	wall1->computeNormals();
 	wall1->computeCylinderTexture();
 	wall1->computeTangents();
 	wall1->createObjectBuffers();
-	wall1->texture.readTexture("shingles-diffuse.ppm");
+	wall1->texture.readTexture("objects/1.ppm");
 	objects.push_back(*wall1);
 
-	wall1 = new myObject3D();
-	wall1->readMesh("plane.obj");
-	wall1->scale(7, 3, 3);
-	wall1->translate(0, 10, -3);
-	wall1->rotate(1, 0, 0, 90);
+	wall1 = new myObject3D(); // left3
+	wall1->readMesh("objects/wall.obj");
+	wall1->scale(1, 3, 2);
+	wall1->translate(-7, 0, -9);
 	wall1->computeNormals();
 	wall1->computeCylinderTexture();
 	wall1->computeTangents();
 	wall1->createObjectBuffers();
-	wall1->texture.readTexture("shingles-diffuse.ppm");
+	wall1->texture.readTexture("objects/1.ppm");
+	objects.push_back(*wall1);
+
+	wall1 = new myObject3D(); // ahead
+	wall1->readMesh("objects/wall.obj");
+	wall1->scale(7, 3, 1);
+	wall1->translate(0, 0, 10);
+	wall1->computeNormals();
+	wall1->computeCylinderTexture();
+	wall1->computeTangents();
+	wall1->createObjectBuffers();
+	wall1->texture.readTexture("objects/1.ppm");
+	objects.push_back(*wall1);
+
+	wall1 = new myObject3D(); // behind
+	wall1->readMesh("objects/wall.obj");
+	wall1->scale(7, 3, 1);
+	wall1->translate(0, 0, -10);
+	wall1->computeNormals();
+	wall1->computeCylinderTexture();
+	wall1->computeTangents();
+	wall1->createObjectBuffers();
+	wall1->texture.readTexture("objects/1.ppm");
 	objects.push_back(*wall1);
 
 	glUniform1i(glGetUniformLocation(shaderprogram1, "tex"), 1);
