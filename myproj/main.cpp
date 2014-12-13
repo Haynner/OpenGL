@@ -22,8 +22,9 @@ int Glut_w = 600, Glut_h = 400;
 
 //Variables and their values for the camera setup.
 myPoint3D camera_eye(0,2,4);
-myVector3D camera_up(0,1,0);
-myVector3D camera_forward (0,0,-0.5);
+myVector3D camera_up(0, 1, 0);
+myVector3D camera_forward(0, 0, -0.5);
+
 
 float fovy = 90;
 float zNear = 0.2;
@@ -50,11 +51,14 @@ vector<GLfloat> vertices;
 vector<GLfloat> normals;
 vector<GLuint> indices;
 
+myObject3D me, *apple;
 std::vector<myObject3D> objects;
 
 //these variables control the roration and movement of the camera. When non-zero camera is moving, when zero camera is still
 int deltaAngle = 0;
 int deltaMove = 0;
+
+bool collision(myObject3D obj, myPoint3D deplacement);
 
 //This function is called when a mouse button is pressed.
 void mouse(int button, int state, int x, int y)
@@ -161,7 +165,6 @@ void keyboard(unsigned char key, int x, int y) {
 		glUniform1i(renderStyle_loc, renderStyle) ; 
 		break;
 	case 'r':
-		cout << "bite" << endl;
 		camera_eye = myPoint3D(0,2,4);
 		camera_up = myVector3D(0,1,0);
 		camera_forward = myVector3D(0,0,-0.5);
@@ -217,6 +220,11 @@ void pressKey(unsigned char key, int x, int y) {
 		case 'p':
 			mylightType = (mylightType + 1) % 3;
 			break;
+		case 'e':
+			if (collision(*apple, myPoint3D(0, 0, 0) + camera_forward * 0.5))
+			{
+				objects.erase(objects.begin());
+			}
 	}
 	glutPostRedisplay();
 }
@@ -231,28 +239,51 @@ void releaseKey(unsigned char  key, int x, int y) {
 	glutPostRedisplay();
 }
 
-void computePos(int deltaMove) {
-	bool canPass = true;
+myPoint3D deplacement() {
+	return myPoint3D(0, 0, 0) + camera_forward * 0.012 * deltaMove;
+}
+
+bool collision(myObject3D obj, myPoint3D deplacement) // return true si collision
+{
+	if ((me.minX + deplacement.X < obj.maxX)
+		&& (me.maxX + deplacement.X > obj.minX)
+		&& (me.minY < obj.maxY)
+		&& (me.maxY > obj.minY)
+		&& (me.minZ + deplacement.Z < obj.maxZ)
+		&& (me.maxZ + deplacement.Z > obj.minZ))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool collision() // return true si collision
+{
+
 	for each (myObject3D obj in objects)
 	{
-		if (((camera_eye + camera_forward * 0.5 * deltaMove).X < obj.maxX && (camera_eye + camera_forward * 0.5 * deltaMove).X > obj.minX) && ((camera_eye + camera_forward * 0.5 * deltaMove).Z < obj.maxZ && (camera_eye + camera_forward * 0.5 * deltaMove).Z >  obj.minZ) && (camera_eye.Y - 1 < obj.maxY && camera_eye.Y - 1 >  obj.minY))
+		if ((me.minX + deplacement().X < obj.maxX)
+		&& (me.maxX + deplacement().X > obj.minX)
+		&& (me.minY < obj.maxY) 
+		&& (me.maxY > obj.minY)    
+		&& (me.minZ + deplacement().Z < obj.maxZ)
+		&& (me.maxZ + deplacement().Z > obj.minZ))
 		{
-			
-			double objCX = (obj.minX + obj.maxX) / 2; // X center of the box
-			double objCZ = (obj.minZ + obj.maxZ) / 2; // Z center of the box
-			double objCY = (obj.minY + obj.maxY) / 2; // Y center of the box
-			double dist = sqrt(pow(objCX - camera_eye.X, 2) + pow(objCZ - camera_eye.Z, 2) + pow(objCY - camera_eye.Y, 2)); // distance beetween cam and obj 
-			double newdist = sqrt(pow(objCX - (camera_eye + (camera_forward * 0.012 * deltaMove)).X, 2) + pow(objCZ - (camera_eye + (camera_forward * 0.012 * deltaMove)).Z, 2) + pow(objCY - (camera_eye + (camera_forward * 0.012 * deltaMove)).Y, 2));
-
-			if (newdist < dist || newdist != newdist)
-				canPass = false;
-		}
+			return true;
+		}	
 	}
-	
-	if (canPass)
+	return false;
+}
+
+void computePos(int deltaMove) {	
+	if (!collision())
 	{
-		camera_eye.X = (camera_eye + camera_forward * 0.012 * deltaMove).X;
-		camera_eye.Z = (camera_eye + camera_forward * 0.012 * deltaMove).Z;
+		camera_eye.X += deplacement().X;
+		camera_eye.Z += deplacement().Z;
+
+		me.translate(deplacement().X, 0, deplacement().Z);
+
 		glutPostRedisplay();
 	}
 }
@@ -313,7 +344,8 @@ void display()
 	//int mylightType = 1;
 	glUniform1i(mylightType_loc, mylightType);
 	
-	//obj1->displayNormal();
+	//obj->displayNormal();
+	//me.displayObject(shaderprogram1, view_matrix);
 	for each(myObject3D obj in objects)
 	{
 		obj.displayObject(shaderprogram1, view_matrix);
@@ -327,16 +359,7 @@ void display()
 	glVertex3f(mylightPosition[0],mylightPosition[1],mylightPosition[2]);
 	glVertex3f(mylightPosition[0]+mylightDirection[0],mylightPosition[1]+mylightDirection[1],mylightPosition[2]+mylightDirection[2]);
 	glEnd();
-	/*{
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
-
-	glDrawElements(GL_TRIANGLES, 12*3, GL_UNSIGNED_INT, 0) ; 
-	}*/
-
+	
 	glFlush();
 }
 
@@ -359,18 +382,28 @@ void init()
 	mylightDirection_loc = glGetUniformLocation(shaderprogram1, "mylightDirection");
 	mylightType_loc = glGetUniformLocation(shaderprogram1, "mylightType");
 	
-	myObject3D *obj1, *obj2, *obj3, *door;
-	obj1 = new myObject3D();
-	obj1->readMesh("sphere.obj");
-	obj1->translate(0, 3.9, 0);
-	obj1->scale(0.5, 0.5, 0.5);
-	obj1->computeNormals();
-	obj1->computeSphereTexture();
-	obj1->computeTangents();
-	obj1->createObjectBuffers();
-	obj1->texture.readTexture("shingles-diffuse.ppm");
-	obj1->bump.readTexture("shingles-normal.ppm");
-	objects.push_back(*obj1);
+	me = myObject3D();
+	me.readMesh("objects/me.obj");
+	me.scale(0.5, 0.7, 0.5);
+	me.translate(camera_eye.X, 0, camera_eye.Z);
+	me.computeNormals();
+	me.computeSphereTexture();
+	me.computeTangents();
+	me.createObjectBuffers();
+	me.texture.readTexture("shingles-diffuse.ppm");
+	me.bump.readTexture("shingles-normal.ppm");
+
+	myObject3D *obj2, *obj3, *door;
+	apple = new myObject3D();
+	apple->readMesh("apple.obj");
+	apple->translate(0, 4.1, 3);
+	apple->scale(0.4, 0.4, 0.4);
+	apple->computeNormals();
+	apple->computeSphereTexture();
+	apple->computeTangents();
+	apple->createObjectBuffers();
+	apple->texture.readTexture("objects/apple.ppm");
+	objects.push_back(*apple);
 	
 	obj2 = new myObject3D();
 	obj2->readMesh("table.obj");
