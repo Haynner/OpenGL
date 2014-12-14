@@ -79,17 +79,12 @@ void main (void)
 		vec3 moiVersOrigine = normalize(eye - position);
 
 		//diffuse
-<<<<<<< HEAD
 		gl_FragColor += mylightColor * kd * max (dot(normal,moiVersLumiere), 0.0);
-=======
 		gl_FragColor += mylightColor * kd * 0.7 * max ( dot(normal,moiVersLumiere), 0.0);
->>>>>>> c6cd03e392492c0204edac258636b49674450507
 	
 		//specular
 		vec3 reflected_ray = normalize(reflect(position-lightpos,normal));
 		gl_FragColor += mylightColor * ks * pow(max(dot(reflected_ray,moiVersOrigine),0.0),20);
-<<<<<<< HEAD
-=======
 
 		vec3 moiVersLumiere2 = normalize(lightpos2 - position);
 		vec3 moiVersOrigine2 = normalize(eye - position);
@@ -100,7 +95,6 @@ void main (void)
 		//specular
 		vec3 reflected_ray2 = normalize(reflect(position-lightpos2,normal));
 		gl_FragColor += mylightColor2 * ks * pow(max(dot(reflected_ray2,moiVersOrigine2),0.0),20);
->>>>>>> c6cd03e392492c0204edac258636b49674450507
 	}else {
 		//Spot rouge
 		//diffuse

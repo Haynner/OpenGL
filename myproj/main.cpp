@@ -491,14 +491,11 @@ void init()
 
 	myObject3D *ceiling2 = new myObject3D();
 	ceiling2->readMesh("plane.obj");
-<<<<<<< HEAD
 	ceiling->rotate(1, 0, 0, 180);
 	ceiling2->translate(-7, 6, 0);
 	ceiling2->scale(7, 1, 10);
-=======
 	ceiling2->translate(0, 6, 0);
 	ceiling2->scale(-21, 1, 10);
->>>>>>> c6cd03e392492c0204edac258636b49674450507
 	ceiling2->computeNormals();
 	ceiling2->computeRectangleTexture();
 	ceiling2->computeTangents();
