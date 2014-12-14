@@ -58,8 +58,8 @@ void main (void)
 	kd+=texture2D(tex, texture_to_fragment.st);
 
 	//cube mapping
-	vec3 reflection  = normalize(reflect(position-eye, normal));
-	reflection = vec3 (inverse (myview_matrix * mymodel_matrix ) * vec4 (reflection, 0.0));
+	vec3 reflection  = normalize(reflect(normalize(eye - position), mynormal_matrix * normal_to_fragment));
+	reflection = vec3 (inverse (myview_matrix) * vec4 (reflection, 0.0));
 	kd += textureCube(cubemap, reflection);
 
 	// Ks
@@ -67,18 +67,18 @@ void main (void)
 
 	
 	if(mylightType==0){
-		//gl_FragColor = kd * 0.05;
+		gl_FragColor = kd * 0.15;
 
 		//Lumiere piece
 		vec3 moiVersLumiere = normalize(lightpos - position);
 		vec3 moiVersOrigine = normalize(eye - position);
 
 		//diffuse
-		gl_FragColor += mylightColor * kd * max ( dot(normal,moiVersLumiere), 0.0);
+		gl_FragColor += mylightColor * kd * max (dot(normal,moiVersLumiere), 0.0);
 	
 		//specular
 		vec3 reflected_ray = normalize(reflect(position-lightpos,normal));
-		//gl_FragColor += mylightColor * ks * pow(max(dot(reflected_ray,moiVersOrigine),0.0),20);
+		gl_FragColor += mylightColor * ks * pow(max(dot(reflected_ray,moiVersOrigine),0.0),20);
 	}else {
 		//Spot rouge
 		//diffuse

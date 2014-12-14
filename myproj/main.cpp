@@ -248,7 +248,7 @@ void releaseKey(unsigned char  key, int x, int y) {
 }
 
 myPoint3D deplacement() {
-	return myPoint3D(0, 0, 0) + camera_forward * 0.012 * deltaMove;
+	return myPoint3D(0, 0, 0) + camera_forward * 0.02 * deltaMove;
 }
 
 bool collision(myObject3D obj, myPoint3D deplacement) // return true si collision
@@ -462,6 +462,7 @@ void init()
 
 	myObject3D *ceiling = new myObject3D();
 	ceiling->readMesh("plane.obj");
+	ceiling->rotate(1, 0, 0, 180);
 	ceiling->translate(0, 6, 0);
 	ceiling->scale(7, 1, 10);
 	ceiling->computeNormals();
@@ -474,7 +475,8 @@ void init()
 
 	myObject3D *ceiling2 = new myObject3D();
 	ceiling2->readMesh("plane.obj");
-	ceiling2->translate(0, 6, 0);
+	ceiling->rotate(1, 0, 0, 180);
+	ceiling2->translate(-7, 6, 0);
 	ceiling2->scale(7, 1, 10);
 	ceiling2->computeNormals();
 	ceiling2->computeRectangleTexture();
@@ -566,7 +568,7 @@ void init()
 	wall6->bump.readTexture("objects/1.ppm");
 	objects.push_back(*wall6);
 
-	myObject3D *cube = new myObject3D(); // cubemapping
+	/*myObject3D *cube = new myObject3D(); // cubemapping
 	cube->readMesh("objects/cube.obj");
 	cube->translate(0, 0, -5);
 	cube->computeNormals();
@@ -574,7 +576,7 @@ void init()
 	cube->computeTangents();
 	cube->createObjectBuffers();
 	cube->cubemap.cubeMapping("objects/apple.ppm");
-	objects.push_back(*cube);
+	objects.push_back(*cube);*/
 
 
 	myObject3D *wall7 = new myObject3D(); //right

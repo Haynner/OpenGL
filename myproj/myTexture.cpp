@@ -85,8 +85,13 @@ void myTexture::cubeMapping(char *filename)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	for (int i = 0; i<6; i++) {
+	for (int i = 0; i<3; i++) {
 		GLubyte *mytexture = readFile(filename);
+
+		glTexImage2D(GL_TEXTURE_CUBE_MAP, 0, GL_RGBA, (GLuint)width, (GLuint)height, 0, GL_RGBA, GL_UNSIGNED_BYTE, mytexture);
+	}
+	for (int i = 3; i<6; i++) {
+		GLubyte *mytexture = readFile("objects/apple.ppm");
 
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, (GLuint)width, (GLuint)height, 0, GL_RGBA, GL_UNSIGNED_BYTE, mytexture);
 	}
