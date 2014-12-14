@@ -394,7 +394,6 @@ void init()
 	me.computeTangents();
 	me.createObjectBuffers();
 	me.texture.readTexture("shingles-diffuse.ppm");
-	me.bump.readTexture("shingles-normal.ppm");
 
 	myObject3D *obj2, *floor;
 	apple = new myObject3D();
@@ -431,13 +430,25 @@ void init()
 	floor = new myObject3D();
 	floor->readMesh("plane.obj");
 	floor->translate(0, 0, 0);
-	floor->scale(7, 1, 10);
+	floor->scale(10, 1, 10);
 	floor->computeNormals();
 	floor->computeCylinderTexture();
 	floor->computeTangents();
 	floor->createObjectBuffers();
-	floor->texture.readTexture("shingles-diffuse.ppm");
+	floor->texture.readTexture("objects/floor2.ppm");
+	floor->bump.readTexture("objects/floorbump2.ppm");
 	objects.push_back(*floor);
+
+	myObject3D *ceiling = new myObject3D();
+	ceiling->readMesh("plane.obj");
+	ceiling->translate(0, 6, 0);
+	ceiling->scale(7, 1, 10);
+	ceiling->computeNormals();
+	ceiling->computeCylinderTexture();
+	ceiling->computeTangents();
+	ceiling->createObjectBuffers();
+	ceiling->texture.readTexture("objects/1.ppm");
+	objects.push_back(*ceiling);
 
 	/*myObject3D *dooredge = new myObject3D();
 	dooredge->readMesh("objects/dooredge.obj");
@@ -458,6 +469,7 @@ void init()
 	wall1->computeTangents();
 	wall1->createObjectBuffers();
 	wall1->texture.readTexture("objects/1.ppm");
+	wall1->bump.readTexture("shingles-normal.ppm");
 	objects.push_back(*wall1);
 
 	wall1 = new myObject3D(); // left1
@@ -469,6 +481,7 @@ void init()
 	wall1->computeTangents();
 	wall1->createObjectBuffers();
 	wall1->texture.readTexture("objects/1.ppm");
+	wall1->bump.readTexture("shingles-normal.ppm");
 	objects.push_back(*wall1);
 
 	wall1 = new myObject3D(); // left2
@@ -480,6 +493,7 @@ void init()
 	wall1->computeTangents();
 	wall1->createObjectBuffers();
 	wall1->texture.readTexture("objects/1.ppm");
+	wall1->bump.readTexture("shingles-normal.ppm");
 	objects.push_back(*wall1);
 
 	wall1 = new myObject3D(); // left3
@@ -491,6 +505,7 @@ void init()
 	wall1->computeTangents();
 	wall1->createObjectBuffers();
 	wall1->texture.readTexture("objects/1.ppm");
+	wall1->bump.readTexture("shingles-normal.ppm");
 	objects.push_back(*wall1);
 
 	wall1 = new myObject3D(); // ahead

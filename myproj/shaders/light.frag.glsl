@@ -25,15 +25,8 @@ void main (void)
 	//vec4 position_ = myprojection_matrix * myview_matrix * mymodel_matrix * vectex_to_fragment;
 	vec3 position = (position_.xyz / position_.w);
 
-
-	vec4 lightpos_ = mylightPosition;
-	//lightpos_ =  myview_matrix * mymodel_matrix * lightpos_;
-	lightpos_ =  myview_matrix * lightpos_;
-	vec3 lightpos = (lightpos_.xyz) / lightpos_.w;
-
 	vec4 kd = vec4(1,1,1,0);
 	
-
 	vec3 normal = normalize(mynormal_matrix * normal_to_fragment);
 	vec3 t = normalize(mynormal_matrix * tangent_to_fragment);
 	vec3 b = normalize(cross(normal,t));
@@ -42,9 +35,14 @@ void main (void)
 
 	//vec3 reflected_ray = normalize( reflect(position-lightpos,normal));
 	vec3 eye = vec3(0,0,0);
+	eye = normalize(out_m * eye);
 
-	//eye = out_m * eye;
-	//lightpos = out_m * lightpos;
+	vec4 lightpos_ = mylightPosition;
+	lightpos_ = lightpos_;
+	//lightpos_ =  myview_matrix * lightpos_;
+	vec3 lightpos = (lightpos_.xyz) / lightpos_.w;
+	
+	lightpos = normalize(out_m * lightpos);
 
 	if(dot(normal,eye-position) == 0)
 		gl_FragColor = vec4(0,0,0,0);
@@ -55,7 +53,8 @@ void main (void)
 		if (myrenderStyle == 1) Color = vec4(0,0.7,0,0);
 		if (myrenderStyle == 2)
 		{
-			//normal = normalize(2.0 * texture2D(bump, texture_to_fragment.st).rgb - 1.f);
+			normal = normalize(2.0 * texture2D(bump, texture_to_fragment.st).rgb - 1.f);
+		
 			Color = texture2D(tex, texture_to_fragment.st);
 		}
 		vec3 effetLight;
@@ -83,10 +82,10 @@ void main (void)
 		gl_FragColor = Color * 0.2;
 
 		// diffusion
-		gl_FragColor += Color * kd * I;
+		gl_FragColor += Color * mylightColor * I;
 
 		// speculaire
-		//gl_FragColor += Color * mylightColor * pow( max(dot(reflected_ray,normalize(eye-position)),0),60);
+		gl_FragColor += Color * mylightColor * pow( max(dot(reflected_ray,normalize(eye-position)),0),60);
 		
 	}
 
