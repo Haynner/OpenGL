@@ -44,6 +44,9 @@ GLuint normal_matrix_loc;
 GLuint mylightColor_loc;
 GLuint mylightPosition_loc;
 GLuint mylightDirection_loc;
+GLuint mylightColor2_loc;
+GLuint mylightPosition2_loc;
+GLuint mylightDirection2_loc;
 GLuint mylightType_loc;
 GLuint buffers[6];
 
@@ -340,7 +343,7 @@ void display()
 	glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(view_matrix)));
 	glUniformMatrix3fv(normal_matrix_loc, 1, GL_FALSE, &normal_matrix[0][0]);
 
-	glm::vec4 mylightPosition = glm::vec4(0, 2, -2, 1);
+	glm::vec4 mylightPosition = glm::vec4(-14, 2, -2, 1);
 	glUniform4fv(mylightPosition_loc, 1, &mylightPosition[0]);
 
 	glm::vec4 mylightColor = glm::vec4(1, 1, 1, 0);
@@ -348,6 +351,15 @@ void display()
 
 	glm::vec3 mylightDirection = glm::vec3(1, 0, 0);
 	glUniform3fv(mylightDirection_loc, 1, &mylightDirection[0]);
+
+	glm::vec4 mylightPosition2 = glm::vec4(0, 2, -2, 1);
+	glUniform4fv(mylightPosition2_loc, 1, &mylightPosition2[0]);
+
+	glm::vec4 mylightColor2 = glm::vec4(1, 1, 1, 0);
+	glUniform4fv(mylightColor2_loc, 1, &mylightColor2[0]);
+
+	glm::vec3 mylightDirection2 = glm::vec3(1, 0, 0);
+	glUniform3fv(mylightDirection2_loc, 1, &mylightDirection2[0]);
 
 
 	glm::vec4 mySpotPosition = glm::vec4(0, 5, 0, 1);
@@ -397,6 +409,10 @@ void init()
 	mylightPosition_loc = glGetUniformLocation(shaderprogram1, "mylightPosition");
 	mylightDirection_loc = glGetUniformLocation(shaderprogram1, "mylightDirection");
 	mylightType_loc = glGetUniformLocation(shaderprogram1, "mylightType");
+
+	mylightColor2_loc = glGetUniformLocation(shaderprogram1, "mylightColor2");
+	mylightPosition2_loc = glGetUniformLocation(shaderprogram1, "mylightPosition2");
+	mylightDirection2_loc = glGetUniformLocation(shaderprogram1, "mylightDirection2");
 
 	mySpotColor_loc = glGetUniformLocation(shaderprogram1, "mySpotColor");
 	mySpotPosition_loc = glGetUniformLocation(shaderprogram1, "mySpotPosition");
@@ -475,7 +491,7 @@ void init()
 	myObject3D *ceiling2 = new myObject3D();
 	ceiling2->readMesh("plane.obj");
 	ceiling2->translate(0, 6, 0);
-	ceiling2->scale(7, 1, 10);
+	ceiling2->scale(-21, 1, 10);
 	ceiling2->computeNormals();
 	ceiling2->computeRectangleTexture();
 	ceiling2->computeTangents();
