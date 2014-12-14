@@ -20,6 +20,9 @@ uniform samplerCube cubemap;
 uniform vec4 mySpotPosition;
 uniform vec4 mySpotColor;
 uniform vec3 mySpotDirection;
+uniform vec4 mySpotPosition2;
+uniform vec4 mySpotColor2;
+uniform vec3 mySpotDirection2;
 
 in vec4 vectex_to_fragment;
 in vec3 normal_to_fragment;
@@ -58,6 +61,8 @@ void main (void)
 	vec3 lightpos2 = (lightpos2_.xyz) / lightpos2_.w;
 	vec4 spotpos_ = myview_matrix *mySpotPosition;
 	vec3 spotpos = (spotpos_.xyz) / spotpos_.w;
+	vec4 spotpos2_ = myview_matrix *mySpotPosition2;
+	vec3 spotpos2 = (spotpos2_.xyz) / spotpos2_.w;
 
 	// Kd texture
 	kd+=texture2D(tex, texture_to_fragment.st);
@@ -72,7 +77,7 @@ void main (void)
 
 	
 	if(mylightType==0){
-		gl_FragColor = kd * 0.15;
+		//gl_FragColor = kd * 0.05;
 
 		//Lumiere piece
 		vec3 moiVersLumiere = normalize(lightpos - position);
@@ -80,7 +85,7 @@ void main (void)
 
 		//diffuse
 		gl_FragColor += mylightColor * kd * max (dot(normal,moiVersLumiere), 0.0);
-		gl_FragColor += mylightColor * kd * 0.7 * max ( dot(normal,moiVersLumiere), 0.0);
+		gl_FragColor += mylightColor * kd * 0.5 * max ( dot(normal,moiVersLumiere), 0.0);
 	
 		//specular
 		vec3 reflected_ray = normalize(reflect(position-lightpos,normal));
@@ -90,12 +95,30 @@ void main (void)
 		vec3 moiVersOrigine2 = normalize(eye - position);
 
 		//diffuse
-		gl_FragColor += mylightColor2 * kd * 0.7* max ( dot(normal,moiVersLumiere2), 0.0);
+		gl_FragColor += mylightColor2 * kd * 0.5 * max ( dot(normal,moiVersLumiere2), 0.0);
 	
 		//specular
 		vec3 reflected_ray2 = normalize(reflect(position-lightpos2,normal));
 		gl_FragColor += mylightColor2 * ks * pow(max(dot(reflected_ray2,moiVersOrigine2),0.0),20);
-	}else {
+	}else if (mylightType==1){
+		//Spot rouge
+		//diffuse
+		vec4 color = mySpotColor * pow(max(dot(normalize(mynormal_matrix *mySpotDirection),normalize(position - spotpos)),0),10);
+		gl_FragColor += color * kd * max(dot(normal,normalize(spotpos - position)),0.0);
+
+		vec3 reflected_ray = normalize(reflect(position-lightpos,normal));
+		gl_FragColor += color * ks * pow(max(dot(reflected_ray,normalize(eye-position)),0.0),20);
+
+
+		//Spot blanc
+		//diffuse
+		vec4 color2 = mySpotColor2 * pow(max(dot(normalize(mynormal_matrix *mySpotDirection2),normalize(position - spotpos2)),0),30);
+		gl_FragColor += color2 * kd * max(dot(normal,normalize(spotpos2 - position)),0.0);
+
+		vec3 reflected_ray3 = normalize(reflect(position-lightpos2,normal));
+		gl_FragColor += color2 * ks * pow(max(dot(reflected_ray3,normalize(eye-position)),0.0),20);
+	}
+	else {
 		//Spot rouge
 		//diffuse
 		vec4 color = mySpotColor * pow(max(dot(normalize(mynormal_matrix *mySpotDirection),normalize(position - spotpos)),0),10);

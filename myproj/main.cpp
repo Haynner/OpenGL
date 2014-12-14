@@ -36,7 +36,7 @@ int GLUTmouse[2] = { 0, 0 };
 GLuint vertexshader, fragmentshader, shaderprogram1; // shaders
 
 GLuint renderStyle = 0;
-GLuint mylightType =1;
+GLuint mylightType =2;
 GLuint renderStyle_loc;
 GLuint projection_matrix_loc;
 GLuint view_matrix_loc;
@@ -53,6 +53,10 @@ GLuint buffers[6];
 GLuint mySpotColor_loc;
 GLuint mySpotPosition_loc;
 GLuint mySpotDirection_loc;
+
+GLuint mySpotColor2_loc;
+GLuint mySpotPosition2_loc;
+GLuint mySpotDirection2_loc;
 
 vector<GLfloat> vertices;
 vector<GLfloat> normals;
@@ -228,13 +232,17 @@ void pressKey(unsigned char key, int x, int y) {
 			mylightType = (mylightType + 1) % 3;
 			break;
 		case 'e':
-			if (apple != NULL  && collision(*apple, myPoint3D(0, 0, 0) + camera_forward * 0.5) && door != NULL)
+			if (mylightType == 2 && collision(*apple, myPoint3D(0, 0, 0) + camera_forward * 0.5))
 			{
 				objects.erase(objects.begin());
 				apple = NULL;
-				mylightType = 0;
+				mylightType = 1;
+			}
+			else if (mylightType == 1 && collision(*door, myPoint3D(0, 0, 0) + camera_forward * 0.5))
+			{
 				objects.erase(objects.begin());
 				door = NULL;
+				mylightType = 0;
 			}
 	}
 	glutPostRedisplay();
@@ -362,14 +370,24 @@ void display()
 	glUniform3fv(mylightDirection2_loc, 1, &mylightDirection2[0]);
 
 
-	glm::vec4 mySpotPosition = glm::vec4(0, 5, 0, 1);
+	glm::vec4 mySpotPosition = glm::vec4(0, 6, 0, 1);
 	glUniform4fv(mySpotPosition_loc, 1, &mySpotPosition[0]);
 
-	glm::vec4 mySpotColor = glm::vec4(1,0, 0, 0);
+	glm::vec4 mySpotColor = glm::vec4(1, 0, 0, 0);
 	glUniform4fv(mySpotColor_loc, 1, &mySpotColor[0]);
 
 	glm::vec3 mySpotDirection = glm::vec3(0, -1, 0);
 	glUniform3fv(mySpotDirection_loc, 1, &mySpotDirection[0]);
+
+
+	glm::vec4 mySpotPosition2 = glm::vec4(0, 3, -5, 1);
+	glUniform4fv(mySpotPosition2_loc, 1, &mySpotPosition2[0]);
+
+	glm::vec4 mySpotColor2 = glm::vec4(1, 1, 1, 0);
+	glUniform4fv(mySpotColor2_loc, 1, &mySpotColor2[0]);
+
+	glm::vec3 mySpotDirection2 = glm::vec3(-1, 0, 0);
+	glUniform3fv(mySpotDirection2_loc, 1, &mySpotDirection2[0]);
 
 	//int mylightType = 1;
 	glUniform1i(mylightType_loc, mylightType);
@@ -381,12 +399,7 @@ void display()
 		obj.displayObject(shaderprogram1, view_matrix);
 	}
 
-	glPointSize(6.0);
-	glBegin(GL_POINTS);
-	glm::vec4 res = view_matrix*mylightPosition;
-	res[0] /= res[3]; res[1] /= res[3]; res[2] /= res[3];
-	glVertex3f(res[0], res[1], res[2]);
-	glEnd();
+	
 	
 	glFlush();
 }
@@ -418,6 +431,10 @@ void init()
 	mySpotPosition_loc = glGetUniformLocation(shaderprogram1, "mySpotPosition");
 	mySpotDirection_loc = glGetUniformLocation(shaderprogram1, "mySpotDirection");
 	
+	mySpotColor2_loc = glGetUniformLocation(shaderprogram1, "mySpotColor2");
+	mySpotPosition2_loc = glGetUniformLocation(shaderprogram1, "mySpotPosition2");
+	mySpotDirection2_loc = glGetUniformLocation(shaderprogram1, "mySpotDirection2");
+
 	me = myObject3D();
 	me.readMesh("objects/me.obj");
 	me.scale(0.5, 0.5, 0.5);
@@ -480,7 +497,7 @@ void init()
 	ceiling->readMesh("plane.obj");
 	ceiling->rotate(1, 0, 0, 180);
 	ceiling->translate(0, 6, 0);
-	ceiling->scale(7, 1, 10);
+	ceiling->scale(21, 1, 10);
 	ceiling->computeNormals();
 	ceiling->computeRectangleTexture();
 	ceiling->computeTangents();
@@ -489,20 +506,7 @@ void init()
 	ceiling->bump.readTexture("objects/1.ppm");
 	objects.push_back(*ceiling);
 
-	myObject3D *ceiling2 = new myObject3D();
-	ceiling2->readMesh("plane.obj");
-	ceiling->rotate(1, 0, 0, 180);
-	ceiling2->translate(-7, 6, 0);
-	ceiling2->scale(7, 1, 10);
-	ceiling2->translate(0, 6, 0);
-	ceiling2->scale(-21, 1, 10);
-	ceiling2->computeNormals();
-	ceiling2->computeRectangleTexture();
-	ceiling2->computeTangents();
-	ceiling2->createObjectBuffers();
-	ceiling2->texture.readTexture("objects/1.ppm");
-	ceiling2->bump.readTexture("objects/1.ppm");
-	objects.push_back(*ceiling2);
+
 
 	/*myObject3D *dooredge = new myObject3D();
 	dooredge->readMesh("objects/dooredge.obj");
