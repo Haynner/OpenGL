@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "myTexture.h"
 
-bool myTexture::readTexture(char *filename)
+GLubyte* myTexture::readFile(char *filename)
 {
 	FILE *inFile;
 	char buffer[100];
@@ -49,6 +49,13 @@ bool myTexture::readTexture(char *filename)
 	}
 	fclose(inFile);
 
+	return mytexture;
+}
+
+void myTexture::readTexture(char *filename)
+{
+	GLubyte *mytexture = readFile(filename);
+
 	glGenTextures(1, &texName);
 	glBindTexture(GL_TEXTURE_2D, texName);
 
@@ -56,11 +63,32 @@ bool myTexture::readTexture(char *filename)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) ; 
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR) ; 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLuint)width, (GLuint)height, 0, GL_RGBA, GL_UNSIGNED_BYTE, mytexture);
 
 	delete[] mytexture;
+}
+
+void myTexture::cubeMapping(char *filename)
+{
+	glEnable(GL_TEXTURE_CUBE_MAP);
+	glGenTextures(1, &texName);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texName);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	for (int i = 0; i<6; i++) {
+		GLubyte *mytexture = readFile(filename);
+
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, (GLuint)width, (GLuint)height, 0, GL_RGBA, GL_UNSIGNED_BYTE, mytexture);
+	}
 }
 

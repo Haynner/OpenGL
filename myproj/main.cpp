@@ -554,8 +554,19 @@ void init()
 	wall6->bump.readTexture("shingles-normal.ppm");
 	objects.push_back(*wall6);
 
+	myObject3D *cube = new myObject3D(); // cubemapping
+	cube->readMesh("objects/cube.obj");
+	cube->translate(0, 0, -5);
+	cube->computeNormals();
+	cube->computeCylinderTexture();
+	cube->computeTangents();
+	cube->createObjectBuffers();
+	cube->cubemap.cubeMapping("objects/apple.ppm");
+	objects.push_back(*cube);
+
 	glUniform1i(glGetUniformLocation(shaderprogram1, "tex"), 1);
 	glUniform1i(glGetUniformLocation(shaderprogram1, "bump"), 2);
+	glUniform1i(glGetUniformLocation(shaderprogram1, "cubemap"), 3);
 
 	glClearColor(0.4, 0.4, 0.4, 0);
 }

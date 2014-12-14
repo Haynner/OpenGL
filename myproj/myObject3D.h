@@ -7,7 +7,7 @@
 #include <glm/gtx/transform.hpp>
 #include <fstream>
 #include "vector3d.h"
-#include "myTexture.h"
+#include "myTexture.h";
 #define PI 3.14159265
 
 using namespace std;
@@ -24,6 +24,7 @@ public:
 
 	glm::mat4 model_matrix;
 	myTexture texture;
+	myTexture cubemap;
 	myTexture bump;
 
 	float minX, maxX, minY, maxY, minZ, maxZ;
@@ -213,6 +214,9 @@ public:
 
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, bump.texName);
+
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.texName);
 		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
 		

@@ -12,6 +12,7 @@ uniform vec3 mylightDirection;
 uniform int mylightType;
 uniform sampler2D tex;
 uniform sampler2D bump;
+uniform samplerCube cubemap;
 
 uniform vec4 mySpotPosition;
 uniform vec4 mySpotColor;
@@ -21,7 +22,7 @@ in vec4 vectex_to_fragment;
 in vec3 normal_to_fragment;
 in vec2 texture_to_fragment;
 in vec3 tangent_to_fragment;
-
+#extension GL_NV_shadow_samplers_cube : enable
 
 void main (void)
 {   
@@ -46,7 +47,6 @@ void main (void)
 	//origine
 	vec3 eye = vec3(0,0,0);
 	eye = normalize(out_m * eye);
-	
 
 	//Lumiere position
 	vec4 lightpos_ = myview_matrix *mylightPosition;
@@ -56,6 +56,11 @@ void main (void)
 
 	// Kd texture
 	kd+=texture2D(tex, texture_to_fragment.st);
+
+	//cube mapping
+	vec3 reflection  = normalize(reflect(position-eye, normal));
+	reflection = vec3 (inverse (myview_matrix * mymodel_matrix ) * vec4 (reflection, 0.0));
+	kd += textureCube(cubemap, reflection);
 
 	// Ks
 	vec4 ks = vec4(1,1,1,0);
