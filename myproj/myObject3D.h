@@ -7,7 +7,7 @@
 #include <glm/gtx/transform.hpp>
 #include <fstream>
 #include "vector3d.h"
-#include "myTexture.h";
+#include "myTexture.h"
 #define PI 3.14159265
 
 using namespace std;

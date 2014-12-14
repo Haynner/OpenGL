@@ -47,6 +47,10 @@ GLuint mylightDirection_loc;
 GLuint mylightType_loc;
 GLuint buffers[6];
 
+GLuint mySpotColor_loc;
+GLuint mySpotPosition_loc;
+GLuint mySpotDirection_loc;
+
 vector<GLfloat> vertices;
 vector<GLfloat> normals;
 vector<GLuint> indices;
@@ -335,14 +339,24 @@ void display()
 	glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(view_matrix)));
 	glUniformMatrix3fv(normal_matrix_loc, 1, GL_FALSE, &normal_matrix[0][0]);
 
-	glm::vec4 mylightPosition = glm::vec4(3,0,0,1);
+	glm::vec4 mylightPosition = glm::vec4(0, 2, -2, 1);
 	glUniform4fv(mylightPosition_loc, 1, &mylightPosition[0]);
 
-	glm::vec4 mylightColor = glm::vec4(1,1,1,0);
-	glUniform4fv(mylightColor_loc, 1,  &mylightColor[0]);
+	glm::vec4 mylightColor = glm::vec4(1, 1, 1, 0);
+	glUniform4fv(mylightColor_loc, 1, &mylightColor[0]);
 
-	glm::vec3 mylightDirection = glm::vec3(1,0,0);
+	glm::vec3 mylightDirection = glm::vec3(1, 0, 0);
 	glUniform3fv(mylightDirection_loc, 1, &mylightDirection[0]);
+
+
+	glm::vec4 mySpotPosition = glm::vec4(0, 5, 0, 1);
+	glUniform4fv(mySpotPosition_loc, 1, &mySpotPosition[0]);
+
+	glm::vec4 mySpotColor = glm::vec4(1,0, 0, 0);
+	glUniform4fv(mySpotColor_loc, 1, &mySpotColor[0]);
+
+	glm::vec3 mySpotDirection = glm::vec3(0, -1, 0);
+	glUniform3fv(mySpotDirection_loc, 1, &mySpotDirection[0]);
 
 	//int mylightType = 1;
 	glUniform1i(mylightType_loc, mylightType);
@@ -356,11 +370,9 @@ void display()
 
 	glPointSize(6.0);
 	glBegin(GL_POINTS);
-	glVertex3f(mylightPosition[0],mylightPosition[1],mylightPosition[2]);
-	glEnd();
-	glBegin(GL_LINES);
-	glVertex3f(mylightPosition[0],mylightPosition[1],mylightPosition[2]);
-	glVertex3f(mylightPosition[0]+mylightDirection[0],mylightPosition[1]+mylightDirection[1],mylightPosition[2]+mylightDirection[2]);
+	glm::vec4 res = view_matrix*mylightPosition;
+	res[0] /= res[3]; res[1] /= res[3]; res[2] /= res[3];
+	glVertex3f(res[0], res[1], res[2]);
 	glEnd();
 	
 	glFlush();
@@ -384,6 +396,10 @@ void init()
 	mylightPosition_loc = glGetUniformLocation(shaderprogram1, "mylightPosition");
 	mylightDirection_loc = glGetUniformLocation(shaderprogram1, "mylightDirection");
 	mylightType_loc = glGetUniformLocation(shaderprogram1, "mylightType");
+
+	mySpotColor_loc = glGetUniformLocation(shaderprogram1, "mySpotColor");
+	mySpotPosition_loc = glGetUniformLocation(shaderprogram1, "mySpotPosition");
+	mySpotDirection_loc = glGetUniformLocation(shaderprogram1, "mySpotDirection");
 	
 	me = myObject3D();
 	me.readMesh("objects/me.obj");
@@ -395,6 +411,7 @@ void init()
 	me.createObjectBuffers();
 	me.texture.readTexture("shingles-diffuse.ppm");
 
+
 	myObject3D *obj2, *floor;
 	apple = new myObject3D();
 	apple->readMesh("apple.obj");
@@ -405,6 +422,7 @@ void init()
 	apple->computeTangents();
 	apple->createObjectBuffers();
 	apple->texture.readTexture("objects/apple.ppm");
+	apple->bump.readTexture("objects/1.ppm");
 	objects.push_back(*apple);
 
 	door = new myObject3D();
@@ -415,6 +433,7 @@ void init()
 	door->computeTangents();
 	door->createObjectBuffers();
 	door->texture.readTexture("objects/door.ppm");
+	door->bump.readTexture("objects/1.ppm");
 	objects.push_back(*door);
 	
 	obj2 = new myObject3D();
@@ -425,6 +444,7 @@ void init()
 	obj2->computeTangents();
 	obj2->createObjectBuffers();
 	obj2->texture.readTexture("objects/wood.ppm");
+	obj2->bump.readTexture("objects/1.ppm");
 	objects.push_back(*obj2);
 
 	floor = new myObject3D();
@@ -448,6 +468,7 @@ void init()
 	ceiling->computeTangents();
 	ceiling->createObjectBuffers();
 	ceiling->texture.readTexture("objects/1.ppm");
+	ceiling->bump.readTexture("objects/1.ppm");
 	objects.push_back(*ceiling);
 
 	/*myObject3D *dooredge = new myObject3D();
@@ -472,63 +493,65 @@ void init()
 	wall1->bump.readTexture("shingles-normal.ppm");
 	objects.push_back(*wall1);
 
-	wall1 = new myObject3D(); // left1
-	wall1->readMesh("objects/wall.obj");
-	wall1->scale(1, 3, 8);
-	wall1->translate(-7, 0, 5);
-	wall1->computeNormals();
-	wall1->computeCylinderTexture();
-	wall1->computeTangents();
-	wall1->createObjectBuffers();
-	wall1->texture.readTexture("objects/1.ppm");
-	wall1->bump.readTexture("shingles-normal.ppm");
-	objects.push_back(*wall1);
+	myObject3D *wall2 = new myObject3D(); // left1
+	wall2->readMesh("objects/wall.obj");
+	wall2->scale(1, 3, 8);
+	wall2->translate(-7, 0, 5);
+	wall2->computeNormals();
+	wall2->computeCylinderTexture();
+	wall2->computeTangents();
+	wall2->createObjectBuffers();
+	wall2->texture.readTexture("objects/1.ppm");
+	wall2->bump.readTexture("shingles-normal.ppm");
+	objects.push_back(*wall2);
 
-	wall1 = new myObject3D(); // left2
-	wall1->readMesh("objects/wall.obj");
-	wall1->scale(1, 0.5, 2);
-	wall1->translate(-7, 5, -5);
-	wall1->computeNormals();
-	wall1->computeCylinderTexture();
-	wall1->computeTangents();
-	wall1->createObjectBuffers();
-	wall1->texture.readTexture("objects/1.ppm");
-	wall1->bump.readTexture("shingles-normal.ppm");
-	objects.push_back(*wall1);
+	myObject3D *wall3 = new myObject3D(); // left2
+	wall3->readMesh("objects/wall.obj");
+	wall3->scale(1, 0.5, 2);
+	wall3->translate(-7, 5, -5);
+	wall3->computeNormals();
+	wall3->computeCylinderTexture();
+	wall3->computeTangents();
+	wall3->createObjectBuffers();
+	wall3->texture.readTexture("objects/1.ppm");
+	wall3->bump.readTexture("shingles-normal.ppm");
+	objects.push_back(*wall3);
 
-	wall1 = new myObject3D(); // left3
-	wall1->readMesh("objects/wall.obj");
-	wall1->scale(1, 3, 2);
-	wall1->translate(-7, 0, -9);
-	wall1->computeNormals();
-	wall1->computeCylinderTexture();
-	wall1->computeTangents();
-	wall1->createObjectBuffers();
-	wall1->texture.readTexture("objects/1.ppm");
-	wall1->bump.readTexture("shingles-normal.ppm");
-	objects.push_back(*wall1);
+	myObject3D *wall4 = new myObject3D(); // left3
+	wall4->readMesh("objects/wall.obj");
+	wall4->scale(1, 3, 2);
+	wall4->translate(-7, 0, -9);
+	wall4->computeNormals();
+	wall4->computeCylinderTexture();
+	wall4->computeTangents();
+	wall4->createObjectBuffers();
+	wall4->texture.readTexture("objects/1.ppm");
+	wall4->bump.readTexture("shingles-normal.ppm");
+	objects.push_back(*wall4);
 
-	wall1 = new myObject3D(); // ahead
-	wall1->readMesh("objects/wall.obj");
-	wall1->scale(7, 3, 1);
-	wall1->translate(0, 0, 10);
-	wall1->computeNormals();
-	wall1->computeCylinderTexture();
-	wall1->computeTangents();
-	wall1->createObjectBuffers();
-	wall1->texture.readTexture("objects/1.ppm");
-	objects.push_back(*wall1);
+	myObject3D *wall5 = new myObject3D(); // ahead
+	wall5->readMesh("objects/wall.obj");
+	wall5->scale(7, 3, 1);
+	wall5->translate(0, 0, 10);
+	wall5->computeNormals();
+	wall5->computeCylinderTexture();
+	wall5->computeTangents();
+	wall5->createObjectBuffers();
+	wall5->texture.readTexture("objects/1.ppm");
 
-	wall1 = new myObject3D(); // behind
-	wall1->readMesh("objects/wall.obj");
-	wall1->scale(7, 3, 1);
-	wall1->translate(0, 0, -10);
-	wall1->computeNormals();
-	wall1->computeCylinderTexture();
-	wall1->computeTangents();
-	wall1->createObjectBuffers();
-	wall1->texture.readTexture("objects/1.ppm");
-	objects.push_back(*wall1);
+	objects.push_back(*wall5);
+
+	myObject3D *wall6 = new myObject3D(); // behind
+	wall6->readMesh("objects/wall.obj");
+	wall6->scale(7, 3, 1);
+	wall6->translate(0, 0, -10);
+	wall6->computeNormals();
+	wall6->computeCylinderTexture();
+	wall6->computeTangents();
+	wall6->createObjectBuffers();
+	wall6->texture.readTexture("objects/1.ppm");
+	wall6->bump.readTexture("shingles-normal.ppm");
+	objects.push_back(*wall6);
 
 	glUniform1i(glGetUniformLocation(shaderprogram1, "tex"), 1);
 	glUniform1i(glGetUniformLocation(shaderprogram1, "bump"), 2);
