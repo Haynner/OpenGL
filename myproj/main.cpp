@@ -36,7 +36,7 @@ int GLUTmouse[2] = { 0, 0 };
 GLuint vertexshader, fragmentshader, shaderprogram1; // shaders
 
 GLuint renderStyle = 0;
-GLuint mylightType =0;
+GLuint mylightType =1;
 GLuint renderStyle_loc;
 GLuint projection_matrix_loc;
 GLuint view_matrix_loc;
@@ -229,8 +229,9 @@ void pressKey(unsigned char key, int x, int y) {
 			{
 				objects.erase(objects.begin());
 				apple = NULL;
-				objects.erase(objects.begin());
-				door = NULL;
+				mylightType = 0;
+				//objects.erase(objects.begin());
+				//door = NULL;
 			}
 	}
 	glutPostRedisplay();
