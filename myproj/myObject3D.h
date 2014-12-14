@@ -253,6 +253,28 @@ public:
 		}
 	}
 
+	void computeRectangleTexture()
+	{
+		int n = vertices.size() / 3;
+		textures.resize(2 * n);
+		GLfloat x, y, z;
+
+		for (int i = 0; i<n; i++)
+		{
+			x = vertices[3 * i]; y = vertices[3 * i + 1]; z = vertices[3 * i + 2];
+
+			textures[2 * i] = z;
+			textures[2 * i + 1] = y;
+			/*if (x == maxX || x == minX)
+				textures[2 * i ] = z;
+			if (z == maxZ || z == minZ)
+				textures[2 * i ] = x;*/
+			//this has problems at the seam, when 1->0 and so interpoltion results in the whole image squeezed between the two border vertices.
+			//if ( y>=0.0f )     textures[2*i+1] = atan2(  y,  x ) / (2*PI) ;
+			//else if ( y<0.0f )  textures[2*i+1] = (2*PI + atan2(  y,  x )) / (2*PI) ;
+		}
+	}
+
 	void computeSphereTexture()
 	{
 		int n =vertices.size()/3;

@@ -225,13 +225,13 @@ void pressKey(unsigned char key, int x, int y) {
 			mylightType = (mylightType + 1) % 3;
 			break;
 		case 'e':
-			if (collision(*apple, myPoint3D(0, 0, 0) + camera_forward * 0.5) && apple != NULL && door != NULL)
+			if (apple != NULL  && collision(*apple, myPoint3D(0, 0, 0) + camera_forward * 0.5) && door != NULL)
 			{
 				objects.erase(objects.begin());
 				apple = NULL;
 				mylightType = 0;
-				//objects.erase(objects.begin());
-				//door = NULL;
+				objects.erase(objects.begin());
+				door = NULL;
 			}
 	}
 	glutPostRedisplay();
@@ -451,9 +451,9 @@ void init()
 	floor = new myObject3D();
 	floor->readMesh("plane.obj");
 	floor->translate(0, 0, 0);
-	floor->scale(10, 1, 10);
+	floor->scale(20, 1, 20);
 	floor->computeNormals();
-	floor->computeCylinderTexture();
+	floor->computeSphereTexture();
 	floor->computeTangents();
 	floor->createObjectBuffers();
 	floor->texture.readTexture("objects/floor2.ppm");
@@ -465,12 +465,24 @@ void init()
 	ceiling->translate(0, 6, 0);
 	ceiling->scale(7, 1, 10);
 	ceiling->computeNormals();
-	ceiling->computeCylinderTexture();
+	ceiling->computeRectangleTexture();
 	ceiling->computeTangents();
 	ceiling->createObjectBuffers();
 	ceiling->texture.readTexture("objects/1.ppm");
 	ceiling->bump.readTexture("objects/1.ppm");
 	objects.push_back(*ceiling);
+
+	myObject3D *ceiling2 = new myObject3D();
+	ceiling2->readMesh("plane.obj");
+	ceiling2->translate(0, 6, 0);
+	ceiling2->scale(7, 1, 10);
+	ceiling2->computeNormals();
+	ceiling2->computeRectangleTexture();
+	ceiling2->computeTangents();
+	ceiling2->createObjectBuffers();
+	ceiling2->texture.readTexture("objects/1.ppm");
+	ceiling2->bump.readTexture("objects/1.ppm");
+	objects.push_back(*ceiling2);
 
 	/*myObject3D *dooredge = new myObject3D();
 	dooredge->readMesh("objects/dooredge.obj");
@@ -487,7 +499,7 @@ void init()
 	wall1->scale(1, 3, 10);
 	wall1->translate(7, 0, 0);
 	wall1->computeNormals();
-	wall1->computeCylinderTexture();
+	wall1->computeRectangleTexture();
 	wall1->computeTangents();
 	wall1->createObjectBuffers();
 	wall1->texture.readTexture("objects/1.ppm");
@@ -499,7 +511,7 @@ void init()
 	wall2->scale(1, 3, 8);
 	wall2->translate(-7, 0, 5);
 	wall2->computeNormals();
-	wall2->computeCylinderTexture();
+	wall2->computeRectangleTexture();
 	wall2->computeTangents();
 	wall2->createObjectBuffers();
 	wall2->texture.readTexture("objects/1.ppm");
@@ -511,11 +523,11 @@ void init()
 	wall3->scale(1, 0.5, 2);
 	wall3->translate(-7, 5, -5);
 	wall3->computeNormals();
-	wall3->computeCylinderTexture();
+	wall3->computeRectangleTexture();
 	wall3->computeTangents();
 	wall3->createObjectBuffers();
 	wall3->texture.readTexture("objects/1.ppm");
-	wall3->bump.readTexture("shingles-normal.ppm");
+	wall3->bump.readTexture("objects/1.ppm");
 	objects.push_back(*wall3);
 
 	myObject3D *wall4 = new myObject3D(); // left3
@@ -523,7 +535,7 @@ void init()
 	wall4->scale(1, 3, 2);
 	wall4->translate(-7, 0, -9);
 	wall4->computeNormals();
-	wall4->computeCylinderTexture();
+	wall4->computeRectangleTexture();
 	wall4->computeTangents();
 	wall4->createObjectBuffers();
 	wall4->texture.readTexture("objects/1.ppm");
@@ -535,11 +547,11 @@ void init()
 	wall5->scale(7, 3, 1);
 	wall5->translate(0, 0, 10);
 	wall5->computeNormals();
-	wall5->computeCylinderTexture();
+	wall5->computeRectangleTexture();
 	wall5->computeTangents();
 	wall5->createObjectBuffers();
 	wall5->texture.readTexture("objects/1.ppm");
-
+	wall5->bump.readTexture("objects/1.ppm");
 	objects.push_back(*wall5);
 
 	myObject3D *wall6 = new myObject3D(); // behind
@@ -547,22 +559,61 @@ void init()
 	wall6->scale(7, 3, 1);
 	wall6->translate(0, 0, -10);
 	wall6->computeNormals();
-	wall6->computeCylinderTexture();
+	wall6->computeRectangleTexture();
 	wall6->computeTangents();
 	wall6->createObjectBuffers();
 	wall6->texture.readTexture("objects/1.ppm");
-	wall6->bump.readTexture("shingles-normal.ppm");
+	wall6->bump.readTexture("objects/1.ppm");
 	objects.push_back(*wall6);
 
 	myObject3D *cube = new myObject3D(); // cubemapping
 	cube->readMesh("objects/cube.obj");
 	cube->translate(0, 0, -5);
 	cube->computeNormals();
-	cube->computeCylinderTexture();
+	cube->computeRectangleTexture();
 	cube->computeTangents();
 	cube->createObjectBuffers();
 	cube->cubemap.cubeMapping("objects/apple.ppm");
 	objects.push_back(*cube);
+
+
+	myObject3D *wall7 = new myObject3D(); //right
+	wall7->readMesh("objects/wall.obj");
+	wall7->scale(1, 3, 10);
+	wall7->translate(-21, 0, 0);
+	wall7->computeNormals();
+	wall7->computeRectangleTexture();
+	wall7->computeTangents();
+	wall7->createObjectBuffers();
+	wall7->texture.readTexture("objects/1.ppm");
+	wall7->bump.readTexture("shingles-normal.ppm");
+	objects.push_back(*wall7);
+
+	myObject3D *wall8 = new myObject3D(); // behind
+	wall8->readMesh("objects/wall.obj");
+	wall8->scale(7, 3, 1);
+	wall8->translate(-14, 0, -10);
+	wall8->computeNormals();
+	wall8->computeSphereTexture();
+	wall8->computeTangents();
+	wall8->createObjectBuffers();
+	wall8->texture.readTexture("objects/1.ppm");
+	wall8->bump.readTexture("objects/1.ppm");
+	objects.push_back(*wall8);
+
+	myObject3D *wall9 = new myObject3D(); // ahead
+	wall9->readMesh("objects/wall.obj");
+	wall9->scale(7, 3, 1);
+	wall9->translate(-14, 0, 10);
+	wall9->computeNormals();
+	wall9->computeCylinderTexture();
+	wall9->computeTangents();
+	wall9->createObjectBuffers();
+	wall9->texture.readTexture("objects/1.ppm");
+	wall9->bump.readTexture("objects/1.ppm");
+	objects.push_back(*wall9);
+
+
 
 	glUniform1i(glGetUniformLocation(shaderprogram1, "tex"), 1);
 	glUniform1i(glGetUniformLocation(shaderprogram1, "bump"), 2);
