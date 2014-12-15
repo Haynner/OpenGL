@@ -1,5 +1,8 @@
 #include "StdAfx.h"
 #include "myTexture.h"
+#include <iostream>
+
+using namespace std;
 
 GLubyte* myTexture::readFile(char *filename)
 {
@@ -75,6 +78,9 @@ void myTexture::readTexture(char *filename)
 
 void myTexture::cubeMapping(char *filename)
 {
+	char filesname[50];
+	GLubyte *mytexture;
+
 	glEnable(GL_TEXTURE_CUBE_MAP);
 	glGenTextures(1, &texName);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texName);
@@ -85,15 +91,13 @@ void myTexture::cubeMapping(char *filename)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	for (int i = 0; i<3; i++) {
-		GLubyte *mytexture = readFile(filename);
-
-		glTexImage2D(GL_TEXTURE_CUBE_MAP, 0, GL_RGBA, (GLuint)width, (GLuint)height, 0, GL_RGBA, GL_UNSIGNED_BYTE, mytexture);
-	}
-	for (int i = 3; i<6; i++) {
-		GLubyte *mytexture = readFile("objects/apple.ppm");
+	
+	for (int i = 0; i<6; i++) {
+		sprintf(filesname, "objects/%s%d.ppm", filename, i);
+		mytexture = readFile(filesname);
 
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, (GLuint)width, (GLuint)height, 0, GL_RGBA, GL_UNSIGNED_BYTE, mytexture);
+		std::cout << (GLuint)width << "  " << (GLuint)height << endl;
 	}
 }
 

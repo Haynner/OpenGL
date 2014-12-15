@@ -259,7 +259,7 @@ void releaseKey(unsigned char  key, int x, int y) {
 }
 
 myPoint3D deplacement() {
-	return myPoint3D(0, 0, 0) + camera_forward * 0.02 * deltaMove;
+	return myPoint3D(0, 0, 0) + camera_forward * 0.1 * deltaMove;
 }
 
 bool collision(myObject3D obj, myPoint3D deplacement) // return true si collision
@@ -309,7 +309,7 @@ void computePos(int deltaMove) {
 
 void computeDir(int deltaAngle) {
 	camera_up.normalize();
-	camera_forward.rotate(camera_up, 0.008 * deltaAngle);
+	camera_forward.rotate(camera_up, 0.03 * deltaAngle);
 	camera_forward.normalize();
 	glutPostRedisplay();
 }
@@ -590,17 +590,6 @@ void init()
 	wall6->bump.readTexture("objects/1.ppm");
 	objects.push_back(*wall6);
 
-	/*myObject3D *cube = new myObject3D(); // cubemapping
-	cube->readMesh("objects/cube.obj");
-	cube->translate(0, 0, -5);
-	cube->computeNormals();
-	cube->computeRectangleTexture();
-	cube->computeTangents();
-	cube->createObjectBuffers();
-	cube->cubemap.cubeMapping("objects/apple.ppm");
-	objects.push_back(*cube);*/
-
-
 	myObject3D *wall7 = new myObject3D(); //right
 	wall7->readMesh("objects/wall.obj");
 	wall7->scale(1, 3, 10);
@@ -637,7 +626,37 @@ void init()
 	wall9->bump.readTexture("objects/1.ppm");
 	objects.push_back(*wall9);
 
+	myObject3D *chest = new myObject3D(); // ahead
+	chest->readMesh("objects/chest.obj");
+	chest->rotate(0, 1, 0, 90);
+	chest->translate(-15, 0, 8);
+	chest->computeNormals();
+	chest->computeCylinderTexture();
+	chest->computeTangents();
+	chest->createObjectBuffers();
+	chest->texture.readTexture("objects/wood.ppm");
+	chest->bump.readTexture("objects/1.ppm");
+	objects.push_back(*chest);
 
+	myObject3D *statue = new myObject3D(); // ahead
+	statue->readMesh("objects/statue.obj");
+	statue->translate(-12, 0, 8);
+	statue->computeNormals();
+	statue->computeCylinderTexture();
+	statue->computeTangents();
+	statue->createObjectBuffers();
+	statue->texture.readTexture("objects/concrete.ppm");
+	objects.push_back(*statue);
+
+	/*myObject3D *cube = new myObject3D(); // cubemapping
+	cube->readMesh("objects/cube.obj");
+	cube->translate(0, 0, -5);
+	cube->computeNormals();
+	cube->computeRectangleTexture();
+	cube->computeTangents();
+	cube->createObjectBuffers();
+	cube->cubemap.cubeMapping("objects/apple.ppm");
+	objects.push_back(*cube);*/
 
 	glUniform1i(glGetUniformLocation(shaderprogram1, "tex"), 1);
 	glUniform1i(glGetUniformLocation(shaderprogram1, "bump"), 2);
